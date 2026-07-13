@@ -47,6 +47,12 @@
             padding: 16px;
         }
 
+        body.embedded-mode {
+            background: transparent;
+            padding: 0;
+            min-height: auto;
+        }
+
         .container {
             background: white;
             border-radius: 16px;
@@ -56,11 +62,25 @@
             overflow: hidden;
         }
 
+        .container.embedded {
+            border-radius: 12px;
+            max-width: 100%;
+            height: 100vh;
+            max-height: 100vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
         .header {
             background: #1A1A1A;
             padding: 32px 24px;
             text-align: center;
             border-bottom: 4px solid #E8500A;
+        }
+
+        .container.embedded .header {
+            padding: 16px 24px;
+            border-bottom: 3px solid #E8500A;
         }
 
         .logo {
@@ -69,6 +89,11 @@
             color: #E8500A;
             letter-spacing: 1px;
             margin-bottom: 8px;
+        }
+
+        .container.embedded .logo {
+            font-size: 22px;
+            margin-bottom: 4px;
         }
 
         .subtitle {
@@ -84,6 +109,10 @@
             border-bottom: 1px solid #E0E0E0;
         }
 
+        .container.embedded .pedido-info {
+            padding: 12px 16px;
+        }
+
         .pedido-info p {
             color: #666;
             font-size: 13px;
@@ -97,12 +126,25 @@
             margin: 8px 0;
         }
 
+        .container.embedded .pedido-id {
+            font-size: 18px;
+            margin: 4px 0;
+        }
+
         .content {
             padding: 32px 24px;
         }
 
+        .container.embedded .content {
+            padding: 20px 16px;
+        }
+
         .question {
             margin-bottom: 32px;
+        }
+
+        .container.embedded .question {
+            margin-bottom: 20px;
         }
 
         .question-text {
@@ -111,6 +153,11 @@
             color: #1A1A1A;
             margin-bottom: 16px;
             line-height: 1.4;
+        }
+
+        .container.embedded .question-text {
+            font-size: 14px;
+            margin-bottom: 12px;
         }
 
         .button-group {
@@ -133,6 +180,12 @@
             justify-content: center;
             text-align: center;
             font-family: 'Barlow', sans-serif;
+        }
+
+        .container.embedded .btn-answer {
+            min-height: 60px;
+            font-size: 14px;
+            padding: 16px 12px;
         }
 
         .btn-si {
@@ -174,6 +227,11 @@
             border-top: 1px solid #E0E0E0;
         }
 
+        .container.embedded .comments-section {
+            margin-top: 16px;
+            padding-top: 16px;
+        }
+
         .comments-label {
             font-size: 14px;
             font-weight: 600;
@@ -182,10 +240,19 @@
             display: block;
         }
 
+        .container.embedded .comments-label {
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
         .comments-note {
             font-size: 12px;
             color: #999;
             margin-bottom: 12px;
+        }
+
+        .container.embedded .comments-note {
+            font-size: 11px;
         }
 
         textarea {
@@ -198,6 +265,11 @@
             font-size: 14px;
             resize: vertical;
             transition: border-color 0.3s ease;
+        }
+
+        .container.embedded textarea {
+            min-height: 80px;
+            font-size: 13px;
         }
 
         textarea:focus {
@@ -222,6 +294,13 @@
             font-family: 'Barlow', sans-serif;
         }
 
+        .container.embedded .submit-btn {
+            min-height: 60px;
+            margin-top: 16px;
+            padding: 16px;
+            font-size: 14px;
+        }
+
         .submit-btn:hover:not(:disabled) {
             background: #C63E08;
             transform: scale(1.02);
@@ -239,9 +318,18 @@
             padding: 40px 24px;
         }
 
+        .container.embedded .thank-you-screen {
+            padding: 24px 16px;
+        }
+
         .thank-you-icon {
             font-size: 56px;
             margin-bottom: 16px;
+        }
+
+        .container.embedded .thank-you-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
         }
 
         .thank-you-title {
@@ -252,11 +340,21 @@
             letter-spacing: 0.5px;
         }
 
+        .container.embedded .thank-you-title {
+            font-size: 22px;
+            margin-bottom: 8px;
+        }
+
         .thank-you-text {
             color: #666;
             font-size: 15px;
             line-height: 1.6;
             margin-bottom: 24px;
+        }
+
+        .container.embedded .thank-you-text {
+            font-size: 13px;
+            margin-bottom: 16px;
         }
 
         .incentive-box {
@@ -268,9 +366,20 @@
             text-align: center;
         }
 
+        .container.embedded .incentive-box {
+            margin: 16px 0;
+            padding: 16px;
+            border-left: 3px solid #E8500A;
+        }
+
         .incentive-icon {
             font-size: 32px;
             margin-bottom: 8px;
+        }
+
+        .container.embedded .incentive-icon {
+            font-size: 24px;
+            margin-bottom: 6px;
         }
 
         .incentive-text {
@@ -278,6 +387,11 @@
             font-size: 14px;
             font-weight: 500;
             line-height: 1.5;
+        }
+
+        .container.embedded .incentive-text {
+            font-size: 12px;
+            line-height: 1.4;
         }
 
         .google-review-btn {
@@ -296,6 +410,13 @@
             font-family: 'Barlow', sans-serif;
         }
 
+        .container.embedded .google-review-btn {
+            min-height: 60px;
+            padding: 16px;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
         .google-review-btn:hover {
             background: #357AE8;
             transform: scale(1.02);
@@ -308,6 +429,12 @@
             margin-top: 24px;
             padding-top: 24px;
             border-top: 1px solid #E0E0E0;
+        }
+
+        .container.embedded .contact-info {
+            font-size: 11px;
+            margin-top: 12px;
+            padding-top: 12px;
         }
 
         .contact-info a {
@@ -486,12 +613,21 @@
 
         let pedidoId = '';
         let clienteNombre = '';
+        let embeddedMode = false;
+        let onEncuestaCompleta = null;
 
-        // Parsear parámetros de URL
+        // Parsear parámetros de URL y detectar modo
         function parsearURL() {
             const params = new URLSearchParams(window.location.search);
             pedidoId = params.get('pedido') || 'SIN-FOLIO';
             clienteNombre = params.get('cliente') || 'Cliente';
+            embeddedMode = params.get('embedded') === 'true';
+
+            if (embeddedMode) {
+                document.body.classList.add('embedded-mode');
+                document.getElementById('survey-screen').classList.add('embedded');
+                document.getElementById('thank-you-screen').classList.add('embedded');
+            }
 
             document.getElementById('pedido-display').textContent = pedidoId;
         }
@@ -544,6 +680,13 @@
                 // Mostrar pantalla de agradecimiento
                 document.getElementById('survey-screen').classList.add('hidden');
                 document.getElementById('thank-you-screen').classList.remove('hidden');
+
+                // Callback para CRM (modo embedded)
+                if (embeddedMode && onEncuestaCompleta) {
+                    setTimeout(() => {
+                        onEncuestaCompleta(datos);
+                    }, 2000);
+                }
             } catch (error) {
                 console.error('Error al enviar encuesta:', error);
                 alert('Error al enviar la evaluación. Intente de nuevo.');
@@ -555,6 +698,40 @@
         // Abrir Google Maps
         window.abrirGoogle = function() {
             window.open('https://maps.app.goo.gl/Usi4bN3xMT2SsWz17', '_blank');
+        };
+
+        // API para integración con CRM
+        // Uso: window.mostrarEncuesta({ pedidoId: 'TRO-045', clienteNombre: 'Juan', onCompleta: callback })
+        window.mostrarEncuesta = function(config) {
+            pedidoId = config.pedidoId || 'SIN-FOLIO';
+            clienteNombre = config.clienteNombre || 'Cliente';
+            onEncuestaCompleta = config.onCompleta || null;
+            embeddedMode = true;
+
+            // Resetear respuestas
+            Object.keys(respuestas).forEach(key => respuestas[key] = null);
+            document.getElementById('comments').value = '';
+
+            // Resetear UI
+            document.querySelectorAll('.btn-answer.selected').forEach(btn => btn.classList.remove('selected'));
+            document.getElementById('survey-screen').classList.remove('hidden');
+            document.getElementById('thank-you-screen').classList.add('hidden');
+            document.getElementById('pedido-display').textContent = pedidoId;
+
+            // Aplicar estilos embedded
+            document.body.classList.add('embedded-mode');
+            document.getElementById('survey-screen').classList.add('embedded');
+            document.getElementById('thank-you-screen').classList.add('embedded');
+
+            // Scroll al top
+            window.scrollTo(0, 0);
+        };
+
+        // Cerrar encuesta (para CRM)
+        window.cerrarEncuesta = function() {
+            document.body.classList.remove('embedded-mode');
+            document.getElementById('survey-screen').classList.remove('embedded');
+            document.getElementById('thank-you-screen').classList.remove('embedded');
         };
 
         // Inicializar

@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación - Materiales Troncoso</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBuw-B6vn3jzruFBPKEifUNp4vYieYn9cU",
+            authDomain: "troncoso--sistema.firebaseapp.com",
+            projectId: "troncoso--sistema",
+            storageBucket: "troncoso--sistema.firebasestorage.app",
+            messagingSenderId: "112716974444",
+            appId: "1:112716974444:web:fd3f570827afc476634b49"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.firebaseDb = db;
+    </script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Barlow', sans-serif;
+            background: linear-gradient(135deg, #1A1A1A 0%, #2D2D2D 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #1A1A1A;
+            padding: 32px 24px;
+            text-align: center;
+            border-bottom: 4px solid #E8500A;
+        }
+
+        .logo {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 28px;
+            color: #E8500A;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #F0EDE8;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .pedido-info {
+            background: #F5F5F5;
+            padding: 16px 24px;
+            text-align: center;
+            border-bottom: 1px solid #E0E0E0;
+        }
+
+        .pedido-info p {
+            color: #666;
+            font-size: 13px;
+            margin: 4px 0;
+        }
+
+        .pedido-id {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 24px;
+            color: #E8500A;
+            margin: 8px 0;
+        }
+
+        .content {
+            padding: 32px 24px;
+        }
+
+        .question {
+            margin-bottom: 32px;
+        }
+
+        .question-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1A1A1A;
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-answer {
+            flex: 1;
+            padding: 20px 16px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-family: 'Barlow', sans-serif;
+        }
+
+        .btn-si {
+            background: #22C55E;
+            color: white;
+        }
+
+        .btn-si:hover {
+            background: #16A34A;
+            transform: scale(1.02);
+        }
+
+        .btn-si.selected {
+            border-color: white;
+            box-shadow: 0 0 0 3px #22C55E;
+        }
+
+        .btn-no {
+            background: #F0EDE8;
+            color: #1A1A1A;
+            border: 2px solid #D0D0D0;
+        }
+
+        .btn-no:hover {
+            background: #E8E0D8;
+            border-color: #B0B0B0;
+            transform: scale(1.02);
+        }
+
+        .btn-no.selected {
+            background: #D0D0D0;
+            border-color: #1A1A1A;
+            box-shadow: 0 0 0 3px #F0EDE8;
+        }
+
+        .comments-section {
+            margin-top: 32px;
+            padding-top: 32px;
+            border-top: 1px solid #E0E0E0;
+        }
+
+        .comments-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1A1A1A;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .comments-note {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 12px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border: 2px solid #E0E0E0;
+            border-radius: 8px;
+            font-family: 'Barlow', sans-serif;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #E8500A;
+            box-shadow: 0 0 0 3px rgba(232, 80, 10, 0.1);
+        }
+
+        .submit-btn {
+            width: 100%;
+            margin-top: 24px;
+            padding: 20px;
+            background: #E8500A;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 70px;
+            font-family: 'Barlow', sans-serif;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            background: #C63E08;
+            transform: scale(1.02);
+        }
+
+        .submit-btn:disabled {
+            background: #CCC;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* Pantalla de agradecimiento */
+        .thank-you-screen {
+            text-align: center;
+            padding: 40px 24px;
+        }
+
+        .thank-you-icon {
+            font-size: 56px;
+            margin-bottom: 16px;
+        }
+
+        .thank-you-title {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 28px;
+            color: #E8500A;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .thank-you-text {
+            color: #666;
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .incentive-box {
+            background: linear-gradient(135deg, #FFF3E0 0%, #FFE8D0 100%);
+            border-left: 4px solid #E8500A;
+            padding: 20px;
+            margin: 24px 0;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .incentive-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .incentive-text {
+            color: #1A1A1A;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        .google-review-btn {
+            width: 100%;
+            padding: 20px;
+            background: #4285F4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 70px;
+            margin-bottom: 16px;
+            font-family: 'Barlow', sans-serif;
+        }
+
+        .google-review-btn:hover {
+            background: #357AE8;
+            transform: scale(1.02);
+        }
+
+        .contact-info {
+            color: #999;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #E0E0E0;
+        }
+
+        .contact-info a {
+            color: #E8500A;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            color: #E8500A;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #E0E0E0;
+            border-top-color: #E8500A;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsivo */
+        @media (max-width: 480px) {
+            .content {
+                padding: 24px 16px;
+            }
+
+            .header {
+                padding: 24px 16px;
+            }
+
+            .logo {
+                font-size: 24px;
+            }
+
+            .btn-answer {
+                min-height: 60px;
+                font-size: 15px;
+                padding: 16px 12px;
+            }
+
+            .submit-btn,
+            .google-review-btn {
+                min-height: 60px;
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Pantalla de Encuesta -->
+    <div id="survey-screen" class="container">
+        <div class="header">
+            <div class="logo">🏗 MATERIALES TRONCOSO</div>
+            <div class="subtitle">Evaluación del servicio de entrega</div>
+        </div>
+
+        <div class="pedido-info">
+            <p>Su evaluación nos ayuda a mejorar</p>
+            <div class="pedido-id" id="pedido-display">—</div>
+        </div>
+
+        <div class="content">
+            <!-- Pregunta 1 -->
+            <div class="question">
+                <div class="question-text">1. ¿Llegó a tiempo?</div>
+                <div class="button-group">
+                    <button class="btn-answer btn-si" onclick="responder('llegóATiempo', true)">✅ SÍ</button>
+                    <button class="btn-answer btn-no" onclick="responder('llegóATiempo', false)">❌ NO</button>
+                </div>
+            </div>
+
+            <!-- Pregunta 2 -->
+            <div class="question">
+                <div class="question-text">2. ¿Los productos fueron los correctos?</div>
+                <div class="button-group">
+                    <button class="btn-answer btn-si" onclick="responder('productosCorrectos', true)">✅ SÍ</button>
+                    <button class="btn-answer btn-no" onclick="responder('productosCorrectos', false)">❌ NO</button>
+                </div>
+            </div>
+
+            <!-- Pregunta 3 -->
+            <div class="question">
+                <div class="question-text">3. ¿Las cantidades fueron correctas?</div>
+                <div class="button-group">
+                    <button class="btn-answer btn-si" onclick="responder('cantidadesCorrectas', true)">✅ SÍ</button>
+                    <button class="btn-answer btn-no" onclick="responder('cantidadesCorrectas', false)">❌ NO</button>
+                </div>
+            </div>
+
+            <!-- Pregunta 4 -->
+            <div class="question">
+                <div class="question-text">4. ¿La descarga fue sin daños?</div>
+                <div class="button-group">
+                    <button class="btn-answer btn-si" onclick="responder('descargaSinDanos', true)">✅ SÍ</button>
+                    <button class="btn-answer btn-no" onclick="responder('descargaSinDanos', false)">❌ NO</button>
+                </div>
+            </div>
+
+            <!-- Pregunta 5 -->
+            <div class="question">
+                <div class="question-text">5. ¿La atención fue buena?</div>
+                <div class="button-group">
+                    <button class="btn-answer btn-si" onclick="responder('atencionBuena', true)">✅ SÍ</button>
+                    <button class="btn-answer btn-no" onclick="responder('atencionBuena', false)">❌ NO</button>
+                </div>
+            </div>
+
+            <!-- Comentarios -->
+            <div class="comments-section">
+                <label class="comments-label">Comentarios (opcional)</label>
+                <div class="comments-note">Cuéntenos si hay algo que podamos mejorar...</div>
+                <textarea id="comments" placeholder="Sus comentarios..."></textarea>
+            </div>
+
+            <!-- Botón Enviar -->
+            <button class="submit-btn" onclick="enviarEncuesta()">✅ ENVIAR EVALUACIÓN</button>
+        </div>
+    </div>
+
+    <!-- Pantalla de Agradecimiento -->
+    <div id="thank-you-screen" class="container hidden">
+        <div class="header">
+            <div class="logo">🏗 MATERIALES TRONCOSO</div>
+            <div class="subtitle">¡Gracias por su evaluación!</div>
+        </div>
+
+        <div class="thank-you-screen">
+            <div class="thank-you-icon">🙏</div>
+            <div class="thank-you-title">¡GRACIAS!</div>
+            <div class="thank-you-text">
+                Su opinión nos ayuda a mejorar nuestro servicio cada día.
+            </div>
+
+            <div class="incentive-box">
+                <div class="incentive-icon">⭐</div>
+                <div class="incentive-text">
+                    <strong>¿Quedó satisfecho con su entrega?</strong><br>
+                    ¡Déjenos una reseña en Google!<br><br>
+                    🎁 <strong>Muéstrenos su reseña en mostrador</strong><br>
+                    y llévese una <strong>playera Materiales Troncoso</strong> de regalo.
+                </div>
+            </div>
+
+            <button class="google-review-btn" onclick="abrirGoogle()">⭐ DEJAR RESEÑA EN GOOGLE</button>
+
+            <div class="contact-info">
+                📞 <strong>5555906802</strong><br>
+                🌐 materialestroncoso.com<br><br>
+                <em>Gracias por su preferencia</em>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Estado global
+        const respuestas = {
+            llegóATiempo: null,
+            productosCorrectos: null,
+            cantidadesCorrectas: null,
+            descargaSinDanos: null,
+            atencionBuena: null
+        };
+
+        let pedidoId = '';
+        let clienteNombre = '';
+
+        // Parsear parámetros de URL
+        function parsearURL() {
+            const params = new URLSearchParams(window.location.search);
+            pedidoId = params.get('pedido') || 'SIN-FOLIO';
+            clienteNombre = params.get('cliente') || 'Cliente';
+
+            document.getElementById('pedido-display').textContent = pedidoId;
+        }
+
+        // Registrar respuesta
+        window.responder = function(pregunta, valor) {
+            respuestas[pregunta] = valor;
+
+            // Actualizar UI de botones
+            const buttons = event.target.parentElement.querySelectorAll('.btn-answer');
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            event.target.classList.add('selected');
+        };
+
+        // Calcular puntuación
+        function calcularPuntuacion() {
+            const valores = Object.values(respuestas);
+            return valores.filter(v => v === true).length;
+        }
+
+        // Enviar encuesta
+        window.enviarEncuesta = async function() {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loading-spinner"></div> Enviando...';
+
+            try {
+                const comentarios = document.getElementById('comments').value;
+                const puntuacion = calcularPuntuacion();
+
+                const datos = {
+                    pedidoId: pedidoId,
+                    cliente: clienteNombre,
+                    fecha: new Date().toISOString().split('T')[0],
+                    timestamp: serverTimestamp(),
+                    llegóATiempo: respuestas.llegóATiempo,
+                    productosCorrectos: respuestas.productosCorrectos,
+                    cantidadesCorrectas: respuestas.cantidadesCorrectas,
+                    descargaSinDanos: respuestas.descargaSinDanos,
+                    atencionBuena: respuestas.atencionBuena,
+                    comentarios: comentarios || '',
+                    puntuacion: puntuacion,
+                    dejóResena: false
+                };
+
+                const db = window.firebaseDb;
+                const encuestasCollection = collection(db, 'encuestas');
+                await addDoc(encuestasCollection, datos);
+
+                // Mostrar pantalla de agradecimiento
+                document.getElementById('survey-screen').classList.add('hidden');
+                document.getElementById('thank-you-screen').classList.remove('hidden');
+            } catch (error) {
+                console.error('Error al enviar encuesta:', error);
+                alert('Error al enviar la evaluación. Intente de nuevo.');
+                btn.disabled = false;
+                btn.innerHTML = '✅ ENVIAR EVALUACIÓN';
+            }
+        };
+
+        // Abrir Google Maps
+        window.abrirGoogle = function() {
+            window.open('https://maps.app.goo.gl/Usi4bN3xMT2SsWz17', '_blank');
+        };
+
+        // Inicializar
+        parsearURL();
+    </script>
+</body>
+</html>

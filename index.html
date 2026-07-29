@@ -13,7 +13,8 @@
     <!-- Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, limit, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBuw-B6vn3jzruFBPKEifUNp4vYieYn9cU",
@@ -26,8 +27,14 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
 
+        // Reglas de Firestore requieren auth != null — misma estrategia que el CRM.
         window.firebaseDb = db;
+        window.firebaseQueryHelpers = { collection, addDoc, query, where, limit, getDocs, serverTimestamp };
+        window.firebaseAuthReady = signInAnonymously(auth).catch(function(e){
+            console.error('Error de autenticación anónima:', e);
+        });
     </script>
 
     <style>
@@ -495,16 +502,67 @@
     </style>
 </head>
 <body>
+    <!-- Pantalla de carga (mientras se verifica si ya respondió) -->
+    <div id="loading-screen" class="container">
+        <div class="header">
+            <div class="logo">🏗 MATERIALES TRONCOSO</div>
+            <div class="subtitle">Evaluación del servicio de entrega</div>
+        </div>
+        <div class="thank-you-screen">
+            <div class="loading-spinner" style="width:40px;height:40px;"></div>
+        </div>
+    </div>
+
+    <!-- Pantalla de error (link sin parámetros válidos) -->
+    <div id="error-screen" class="container hidden">
+        <div class="header">
+            <div class="logo">🏗 MATERIALES TRONCOSO</div>
+            <div class="subtitle">Evaluación del servicio de entrega</div>
+        </div>
+        <div class="thank-you-screen">
+            <div class="thank-you-icon">⚠️</div>
+            <div class="thank-you-title">ENLACE INVÁLIDO</div>
+            <div class="thank-you-text">
+                Este enlace no incluye la información de su pedido.<br>
+                Por favor use el enlace que le enviamos por WhatsApp.
+            </div>
+            <div class="contact-info">
+                📞 <strong>5555906802</strong><br>
+                🌐 materialestroncoso.com
+            </div>
+        </div>
+    </div>
+
+    <!-- Pantalla de ya respondido -->
+    <div id="already-screen" class="container hidden">
+        <div class="header">
+            <div class="logo">🏗 MATERIALES TRONCOSO</div>
+            <div class="subtitle">Evaluación del servicio de entrega</div>
+        </div>
+        <div class="thank-you-screen">
+            <div class="thank-you-icon">✅</div>
+            <div class="thank-you-title">¡GRACIAS!</div>
+            <div class="thank-you-text">
+                Ya recibimos su evaluación, ¡gracias!
+            </div>
+            <div class="contact-info">
+                📞 <strong>5555906802</strong><br>
+                🌐 materialestroncoso.com
+            </div>
+        </div>
+    </div>
+
     <!-- Pantalla de Encuesta -->
-    <div id="survey-screen" class="container">
+    <div id="survey-screen" class="container hidden">
         <div class="header">
             <div class="logo">🏗 MATERIALES TRONCOSO</div>
             <div class="subtitle">Evaluación del servicio de entrega</div>
         </div>
 
         <div class="pedido-info">
-            <p>Su evaluación nos ayuda a mejorar</p>
+            <p>Pedido</p>
             <div class="pedido-id" id="pedido-display">—</div>
+            <p>Cliente: <strong id="cliente-display">—</strong></p>
         </div>
 
         <div class="content">
@@ -585,7 +643,7 @@
                     <strong>¿Quedó satisfecho con su entrega?</strong><br>
                     ¡Déjenos una reseña en Google!<br><br>
                     🎁 <strong>Muéstrenos su reseña en mostrador</strong><br>
-                    y llévese una <strong>regalo Materiales Troncoso</strong> de regalo.
+                    y llévese un <strong>regalo Materiales Troncoso</strong>.
                 </div>
             </div>
 
@@ -600,8 +658,6 @@
     </div>
 
     <script type="module">
-        import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
         // Estado global
         const respuestas = {
             llegóATiempo: null,
@@ -616,20 +672,65 @@
         let embeddedMode = false;
         let onEncuestaCompleta = null;
 
+        function mostrarPantalla(id) {
+            ['loading-screen', 'error-screen', 'already-screen', 'survey-screen', 'thank-you-screen']
+                .forEach(function(s) {
+                    document.getElementById(s).classList.toggle('hidden', s !== id);
+                });
+        }
+
+        function aplicarModoEmbedded() {
+            if (!embeddedMode) return;
+            document.body.classList.add('embedded-mode');
+            ['loading-screen', 'error-screen', 'already-screen', 'survey-screen', 'thank-you-screen']
+                .forEach(function(s) { document.getElementById(s).classList.add('embedded'); });
+        }
+
+        // Consulta Firestore si ya existe una evaluación para este pedidoId
+        async function yaFueRespondido(id) {
+            const { collection, query, where, limit, getDocs } = window.firebaseQueryHelpers;
+            const q = query(collection(window.firebaseDb, 'encuestas'), where('pedidoId', '==', id), limit(1));
+            const snap = await getDocs(q);
+            return !snap.empty;
+        }
+
+        // Verifica duplicado y decide qué pantalla mostrar
+        async function verificarYMostrar(id, cliente) {
+            pedidoId = id;
+            clienteNombre = cliente || 'Cliente';
+            document.getElementById('pedido-display').textContent = pedidoId;
+            document.getElementById('cliente-display').textContent = clienteNombre;
+            mostrarPantalla('loading-screen');
+            aplicarModoEmbedded();
+
+            try {
+                await window.firebaseAuthReady;
+                const yaRespondio = await yaFueRespondido(pedidoId);
+                if (yaRespondio) {
+                    mostrarPantalla('already-screen');
+                } else {
+                    mostrarPantalla('survey-screen');
+                }
+            } catch (e) {
+                console.error('Error verificando evaluación previa:', e);
+                // Si la verificación falla (ej. sin conexión), dejamos responder de todas formas.
+                mostrarPantalla('survey-screen');
+            }
+        }
+
         // Parsear parámetros de URL y detectar modo
         function parsearURL() {
             const params = new URLSearchParams(window.location.search);
-            pedidoId = params.get('pedido') || 'SIN-FOLIO';
-            clienteNombre = params.get('cliente') || 'Cliente';
+            const pedidoParam = params.get('pedido');
             embeddedMode = params.get('embedded') === 'true';
+            aplicarModoEmbedded();
 
-            if (embeddedMode) {
-                document.body.classList.add('embedded-mode');
-                document.getElementById('survey-screen').classList.add('embedded');
-                document.getElementById('thank-you-screen').classList.add('embedded');
+            if (!pedidoParam) {
+                mostrarPantalla('error-screen');
+                return;
             }
 
-            document.getElementById('pedido-display').textContent = pedidoId;
+            verificarYMostrar(pedidoParam, params.get('cliente'));
         }
 
         // Registrar respuesta
@@ -655,6 +756,8 @@
             btn.innerHTML = '<div class="loading-spinner"></div> Enviando...';
 
             try {
+                await window.firebaseAuthReady;
+
                 const comentarios = document.getElementById('comments').value;
                 const puntuacion = calcularPuntuacion();
 
@@ -662,7 +765,7 @@
                     pedidoId: pedidoId,
                     cliente: clienteNombre,
                     fecha: new Date().toISOString().split('T')[0],
-                    timestamp: serverTimestamp(),
+                    timestamp: Date.now(),
                     llegóATiempo: respuestas.llegóATiempo,
                     productosCorrectos: respuestas.productosCorrectos,
                     cantidadesCorrectas: respuestas.cantidadesCorrectas,
@@ -673,13 +776,11 @@
                     dejóResena: false
                 };
 
-                const db = window.firebaseDb;
-                const encuestasCollection = collection(db, 'encuestas');
-                await addDoc(encuestasCollection, datos);
+                const { collection, addDoc } = window.firebaseQueryHelpers;
+                await addDoc(collection(window.firebaseDb, 'encuestas'), datos);
 
                 // Mostrar pantalla de agradecimiento
-                document.getElementById('survey-screen').classList.add('hidden');
-                document.getElementById('thank-you-screen').classList.remove('hidden');
+                mostrarPantalla('thank-you-screen');
 
                 // Callback para CRM (modo embedded)
                 if (embeddedMode && onEncuestaCompleta) {
@@ -703,25 +804,15 @@
         // API para integración con CRM
         // Uso: window.mostrarEncuesta({ pedidoId: 'TRO-045', clienteNombre: 'Juan', onCompleta: callback })
         window.mostrarEncuesta = function(config) {
-            pedidoId = config.pedidoId || 'SIN-FOLIO';
-            clienteNombre = config.clienteNombre || 'Cliente';
             onEncuestaCompleta = config.onCompleta || null;
             embeddedMode = true;
 
             // Resetear respuestas
             Object.keys(respuestas).forEach(key => respuestas[key] = null);
             document.getElementById('comments').value = '';
-
-            // Resetear UI
             document.querySelectorAll('.btn-answer.selected').forEach(btn => btn.classList.remove('selected'));
-            document.getElementById('survey-screen').classList.remove('hidden');
-            document.getElementById('thank-you-screen').classList.add('hidden');
-            document.getElementById('pedido-display').textContent = pedidoId;
 
-            // Aplicar estilos embedded
-            document.body.classList.add('embedded-mode');
-            document.getElementById('survey-screen').classList.add('embedded');
-            document.getElementById('thank-you-screen').classList.add('embedded');
+            verificarYMostrar(config.pedidoId || 'SIN-FOLIO', config.clienteNombre);
 
             // Scroll al top
             window.scrollTo(0, 0);
@@ -730,8 +821,8 @@
         // Cerrar encuesta (para CRM)
         window.cerrarEncuesta = function() {
             document.body.classList.remove('embedded-mode');
-            document.getElementById('survey-screen').classList.remove('embedded');
-            document.getElementById('thank-you-screen').classList.remove('embedded');
+            ['loading-screen', 'error-screen', 'already-screen', 'survey-screen', 'thank-you-screen']
+                .forEach(function(s) { document.getElementById(s).classList.remove('embedded'); });
         };
 
         // Inicializar

@@ -126,6 +126,9 @@ function enviarEncuestasADosNumeros(pedido, cotizacion) {
 
 - Proyecto: `troncoso--sistema`
 - Colección: `encuestas`
+- Requiere Firebase Anonymous Auth (`signInAnonymously`) antes de leer/escribir — las reglas de Firestore exigen `auth != null`, misma estrategia que el CRM.
+- Si `pedidoId` ya tiene una evaluación guardada, se muestra "Ya recibimos su evaluación, ¡gracias!" en vez del formulario.
+- Si el link no incluye `?pedido=...`, se muestra una pantalla de enlace inválido en vez del formulario.
 - Estructura de documento:
   ```json
   {

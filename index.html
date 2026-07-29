@@ -14,6 +14,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBuw-B6vn3jzruFBPKEifUNp4vYieYn9cU",
@@ -26,8 +27,14 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
 
         window.firebaseDb = db;
+        // Autenticación anónima — requerida por las reglas de Firestore.
+        // Esta página es pública (sin login), pero las reglas piden auth != null.
+        window.firebaseAuthReady = signInAnonymously(auth).catch(function(e) {
+            console.error('Error de autenticación anónima:', e);
+        });
     </script>
 
     <style>
@@ -655,6 +662,8 @@
             btn.innerHTML = '<div class="loading-spinner"></div> Enviando...';
 
             try {
+                await window.firebaseAuthReady;
+
                 const comentarios = document.getElementById('comments').value;
                 const puntuacion = calcularPuntuacion();
 

@@ -14,7 +14,6 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, doc, getDoc, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBuw-B6vn3jzruFBPKEifUNp4vYieYn9cU",
@@ -27,17 +26,12 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const auth = getAuth(app);
 
         // Las reglas de Firestore ya NO piden sesión para esta página: solo dejan CREAR la evaluación
         // y preguntar por UN folio (encuestas_respondidas/{folio}); no se puede leer ni listar nada más.
-        // La sesión anónima se intenta solo por compatibilidad con las reglas anteriores (máx. 6 s de espera).
         window.firebaseDb = db;
         window.firebaseQueryHelpers = { collection, doc, getDoc, writeBatch, serverTimestamp };
-        window.firebaseAuthReady = Promise.race([
-            signInAnonymously(auth).catch(function(e){ console.log('Sin sesión anónima (no hace falta):', e && e.code); }),
-            new Promise(function(r){ setTimeout(r, 6000); })
-        ]);
+        window.firebaseAuthReady = Promise.resolve();   // sin sesión: las reglas dejan crear la evaluación y preguntar por un folio
     </script>
 
     <style>
